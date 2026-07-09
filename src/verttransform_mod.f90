@@ -1468,6 +1468,7 @@ subroutine verttransform_gfs(n,uuh,vvh,wwh,pvh)
       pv(ix,jy,1,n)=pvh(ix,jy,llev)
       rho(ix,jy,1,n)=rhoh(llev)
       pplev(ix,jy,1,n)=akz(llev)
+      prs(ix,jy,1,n)=akz(llev)
       uu(ix,jy,nz,n)=uuh(ix,jy,nuvz)
       vv(ix,jy,nz,n)=vvh(ix,jy,nuvz)
       tt(ix,jy,nz,n)=tth(ix,jy,nuvz,n)
@@ -1481,6 +1482,7 @@ subroutine verttransform_gfs(n,uuh,vvh,wwh,pvh)
       pv(ix,jy,nz,n)=pvh(ix,jy,nuvz)
       rho(ix,jy,nz,n)=rhoh(nuvz)
       pplev(ix,jy,nz,n)=akz(nuvz)
+      prs(ix,jy,nz,n)=akz(nuvz)
       kmin=llev+1
 
        
@@ -1499,6 +1501,7 @@ subroutine verttransform_gfs(n,uuh,vvh,wwh,pvh)
             pv(ix,jy,iz,n)=pv(ix,jy,nz,n)
             rho(ix,jy,iz,n)=rho(ix,jy,nz,n)
             pplev(ix,jy,iz,n)=pplev(ix,jy,nz,n)
+            prs(ix,jy,iz,n)=prs(ix,jy,nz,n)
             exit
           endif
           if ((height(iz).gt.uvwzlev(ix,jy,kz-1)).and. &
@@ -1522,6 +1525,7 @@ subroutine verttransform_gfs(n,uuh,vvh,wwh,pvh)
             rho(ix,jy,iz,n)=(rhoh(kz-1)*dz2+rhoh(kz)*dz1)/dz
 
             pplev(ix,jy,iz,n)=(akz(kz-1)*dz2+akz(kz)*dz1)/dz
+            prs(ix,jy,iz,n)=(akz(kz-1)*dz2+akz(kz)*dz1)/dz
 
           endif
         enddo
