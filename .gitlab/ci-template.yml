@@ -149,7 +149,7 @@ setup:
   stage: test
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   needs:
-    - rocky-build
+    - build-eta
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   artifacts:
@@ -165,7 +165,7 @@ options-test:
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   stage: test
   needs:
-    - rocky-build
+    - build-eta
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
@@ -186,7 +186,7 @@ nests-test:
   stage: test
   when: manual
   needs:
-    - rocky-build
+    - build-eta
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
@@ -203,7 +203,7 @@ openmp-simulation:
   stage: test
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   needs:
-    - rocky-build
+    - build-eta
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
@@ -225,7 +225,7 @@ etex-simulation:
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   when: manual
   needs:
-    - rocky-build
+    - build-eta
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
