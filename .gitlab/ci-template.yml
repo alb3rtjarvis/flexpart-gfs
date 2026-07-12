@@ -13,15 +13,23 @@ variables:
   OS_VERSION: "9"
   PY_VERSION: "3.9"
 
+# rockylinux 8 images have eccodes 2.36  (netcdf 4.7.0, f90: 4.5.2)
+# rockylinux 9 images have eccodes 2.36  (this will probably be updated?) (netcdf 4.8.1, f90: 4.5.4)
+# rockylinux 10 images have eccodes 2.44 (netcdf 4.9.2, f90: 4.6.1)
+# still using the old Dockerfiles for testing.
+# TODO: update Dockerfile to have different eccodes versions
+
 base:
   stage: images
   image: quay.io/podman/stable
   rules:
-    - changes:
-      - tests/Dockerfile
-    - if: '$CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "development"'
+    # only for master and development branches rebuild images
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
+      changes:
+        - .gitlab/Dockerfile
+    - when: never
   script:
-    - podman build -t "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:$(date +"v%Y.%m")" -t "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}" --build-arg RL_RELEASE=$OS_VERSION -f ./tests/Dockerfile
+    - podman build -t "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:$(date +"v%Y.%m")" -t "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}" --build-arg RL_RELEASE=$OS_VERSION -f .gitlab/Dockerfile
     - podman login registry.phaidra.org -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - podman push "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}"
     - podman push "registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:$(date +"v%Y.%m")"
@@ -30,16 +38,18 @@ post:
   stage: images
   image: quay.io/podman/stable
   rules:
-    - changes: 
-      - tests/Dockerfile.python
-    - if: '$CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "development"'
+    # only for master and development branches rebuild images
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
+      changes:
+        - .gitlab/Dockerfile
+    - when: never
   script:
-    - podman build -t "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:$(date +"v%Y.%m")" -t "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:${IMAGE_TAG}" -f ./tests/Dockerfile.python
+    - podman build -t "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:$(date +"v%Y.%m")" -t "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:${IMAGE_TAG}" -f .gitlab/Dockerfile.python
     - podman login registry.phaidra.org -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - podman push "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:$(date +"v%Y.%m")" 
     - podman push "registry.phaidra.org/flexpart/flexpart/python${PY_VERSION}:${IMAGE_TAG}"
 
-rocky-build:
+build-eta:
   stage: build
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   rules:
@@ -55,8 +65,79 @@ rocky-build:
     - nc-config --version
     - nf-config --version
     - h5dump --version
-    - make -j -C src -f makefile_gfortran eta=no arch=x86-64
-    - make -j -C src -f makefile_gfortran arch=x86-64
+    - make -j -C src -f makefile eta=yes arch=x86-64
+  artifacts:
+    when: on_success
+    paths:
+      - ./src/FLEXPART
+      - ./src/FLEXPART_ETA
+    expire_in: 30 mins
+
+build-meter:
+  stage: build
+  image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
+  rules:
+    - changes:
+        - src/*
+        - tests/*
+    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - export FC=gfortran
+    - export LIBRARY_PATH=/usr/lib64:/usr/local/lib64
+    - export CPATH=/usr/include:/usr/local/include:/usr/lib64/gfortran/modules
+    - codes_info -v
+    - nc-config --version
+    - nf-config --version
+    - h5dump --version
+    - make -j -C src -f makefile eta=no arch=x86-64
+  artifacts:
+    when: on_success
+    paths:
+      - ./src/FLEXPART
+      - ./src/FLEXPART_ETA
+    expire_in: 30 mins
+
+build-no-netcdf:
+  stage: build
+  image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
+  rules:
+    - changes:
+        - src/*
+        - tests/*
+    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - export FC=gfortran
+    - export LIBRARY_PATH=/usr/lib64:/usr/local/lib64
+    - export CPATH=/usr/include:/usr/local/include:/usr/lib64/gfortran/modules
+    - codes_info -v
+    - nc-config --version
+    - nf-config --version
+    - h5dump --version
+    - make -j -C src -f makefile ncf=no eta=no arch=x86-64
+  artifacts:
+    when: on_success
+    paths:
+      - ./src/FLEXPART
+      - ./src/FLEXPART_ETA
+    expire_in: 30 mins
+
+build-serial:
+  stage: build
+  image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
+  rules:
+    - changes:
+        - src/*
+        - tests/*
+    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - export FC=gfortran
+    - export LIBRARY_PATH=/usr/lib64:/usr/local/lib64
+    - export CPATH=/usr/include:/usr/local/include:/usr/lib64/gfortran/modules
+    - codes_info -v
+    - nc-config --version
+    - nf-config --version
+    - h5dump --version
+    - make -j -C src -f makefile serial=yes arch=x86-64
   artifacts:
     when: on_success
     paths:
@@ -69,6 +150,8 @@ setup:
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   needs:
     - rocky-build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   artifacts:
     paths:
       - tests/testdata/
@@ -84,7 +167,8 @@ options-test:
   needs:
     - rocky-build
     - setup
-
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - ulimit -s unlimited
     - bash ./tests/run_default_options_test.sh
@@ -104,7 +188,8 @@ nests-test:
   needs:
     - rocky-build
     - setup
-
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - ulimit -s unlimited
     - bash ./tests/run_nests_test.sh
@@ -120,7 +205,8 @@ openmp-simulation:
   needs:
     - rocky-build
     - setup
-
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - ulimit -s unlimited
     - bash ./tests/run_openmp_test.sh
@@ -141,7 +227,8 @@ etex-simulation:
   needs:
     - rocky-build
     - setup
-
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" --accept="EC1994*" -P tests/testdata/ "https://webdata.wolke.img.univie.ac.at/flexpart/"
     - ulimit -s unlimited
@@ -159,6 +246,8 @@ settling-test:
   needs:
     - job: options-test
       artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - cd ./tests/
     - python3 ./settling_test.py
@@ -174,6 +263,8 @@ bkw-test:
   needs:
     - job: options-test
       artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - cd ./tests/
     - python3 ./bkw_test.py
@@ -189,6 +280,8 @@ openmp-test:
   needs:
     - job: openmp-simulation
       artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - cd ./tests/
     - python3 ./openmp_test.py
@@ -199,6 +292,8 @@ etex-test:
   needs:
     - job: etex-simulation
       artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - cd ./tests/
     - python3 ./etex_test.py
@@ -212,9 +307,9 @@ documentation:
   image: registry.phaidra.org/imgw/computer-resources:latest
   stage: build
   rules:
-    - changes: 
-      - documentation/**/*
-    - if: '$CI_COMMIT_REF_NAME == "master"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      changes: 
+        - documentation/**/*
   script:
     - cd ./documentation && mkdocs build -c --verbose
     - sshpass -p "$WOLKE_PASSWORD" rsync -autv --delete -e "ssh -o StrictHostKeyChecking=no" /tmp/cr-site/* "$WOLKE_USER@wolke.img.univie.ac.at:/var/www/flexpart/docs"
@@ -223,9 +318,9 @@ ford:
   image: docker.io/library/python:3.10-alpine
   stage: build
   rules:
-    - changes:
-      - src/*
-    - if: '$CI_COMMIT_REF_NAME == "master"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      changes:
+        - src/*
   script:
     - apk add --update --no-cache openssh sshpass rsync
     - pip install --no-cache-dir ford
@@ -241,11 +336,12 @@ ford:
     - ford project.md -o ./ford
     - sshpass -p "$WOLKE_PASSWORD" rsync -autv --delete -e "ssh -o StrictHostKeyChecking=no" ./ford/* "$WOLKE_USER@wolke.img.univie.ac.at:/var/www/flexpart/ford"
 
-
 flexpart:
   stage: container
   image: quay.io/podman/stable
-  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
+      when: manual
   variables:
     MAJOR_VERSION: "v11"
   script:
@@ -257,7 +353,9 @@ flexpart:
 flexpart-legacy:
   stage: container
   image: quay.io/podman/stable
-  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
+      when: manual
   variables:
     MAJOR_VERSION: "v10"
   script:

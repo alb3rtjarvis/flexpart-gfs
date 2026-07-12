@@ -18,8 +18,8 @@ WORKDIR /src
 # here generic means core_avx2 (most modern CPUs)
 # see https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 RUN make -f makefile_gfortran clean \
-	&& make -f makefile_gfortran eta=no arch=generic \
-	&& make -f makefile_gfortran arch=generic \
+	&& make -f makefile eta=no arch=x86-64 \
+	&& make -f makefile arch=x86-64 \
 	&& mkdir -p /output \
 	&& echo -e "/options/\n/output/\n/inputs/\n/inputs/AVAILABLE" > /pathnames
 

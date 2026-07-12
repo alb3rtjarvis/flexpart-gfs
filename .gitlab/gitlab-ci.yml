@@ -1,0 +1,5 @@
+# Update to central gitlab-ci.yml on main branch
+include:
+  - project: 'flexpart/flexpart'
+    ref: 'master'
+    file: '/.gitlab/ci-template.yml'
