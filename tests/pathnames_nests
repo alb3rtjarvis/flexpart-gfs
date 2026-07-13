@@ -1,7 +1,7 @@
 ./current/
 ./output/
-./default_winds/
+./testdata/
 ./default_winds/AVAILABLE_glob
-./default_winds/
+./testdata/
 ./default_winds/AVAILABLE_europe
 ============================================

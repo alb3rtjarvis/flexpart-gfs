@@ -69,7 +69,6 @@ build-eta:
   artifacts:
     when: on_success
     paths:
-      - ./src/FLEXPART
       - ./src/FLEXPART_ETA
     expire_in: 30 mins
 
@@ -94,7 +93,6 @@ build-meter:
     when: on_success
     paths:
       - ./src/FLEXPART
-      - ./src/FLEXPART_ETA
     expire_in: 30 mins
 
 build-no-netcdf:
@@ -141,7 +139,6 @@ build-serial:
   artifacts:
     when: on_success
     paths:
-      - ./src/FLEXPART
       - ./src/FLEXPART_ETA
     expire_in: 30 mins
 
@@ -150,6 +147,7 @@ setup:
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   needs:
     - build-eta
+    - build-meter
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   artifacts:
@@ -166,6 +164,7 @@ options-test:
   stage: test
   needs:
     - build-eta
+    - build-meter
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
@@ -187,11 +186,14 @@ nests-test:
   when: manual
   needs:
     - build-eta
+    - build-meter
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  
   script:
     - ulimit -s unlimited
+    - wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" --accept="EAe2009*" -P tests/testdata/ "https://webdata.wolke.img.univie.ac.at/flexpart/"
+    - wget -r -nH --cut-dirs=2 --no-parent --reject="index.html*" --accept="EA2009*" -P tests/testdata/ "https://webdata.wolke.img.univie.ac.at/flexpart/"
     - bash ./tests/run_nests_test.sh
   artifacts:
     when: on_success
@@ -204,6 +206,7 @@ openmp-simulation:
   image: registry.phaidra.org/flexpart/flexpart/rockylinux${OS_VERSION}:${IMAGE_TAG}
   needs:
     - build-eta
+    - build-meter
     - setup
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "development"  

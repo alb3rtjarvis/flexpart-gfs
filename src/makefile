@@ -25,8 +25,10 @@ SHELL = /bin/bash
 #     make [-j] debug=yes
 #    Compile a serial version (no OpenMP parallelism)
 #     make [-j] serial=yes
-#    Clean object files and executables
+#    Clean object files
 #     make clean
+#    Clean object files and executables
+#     make cleanall
 #
 ################################################################################
 MAKEFLAGS += -j2
