@@ -5,5 +5,9 @@ class_gribfile.mod
 .DS_Store
 output
 FLEXPART
+FLEXPART_ETA
+FLEXPART_ETA_BIN
+FLEXPART_BIN
 FLEXPART_MPI
 *.sif
+gitversion.txt

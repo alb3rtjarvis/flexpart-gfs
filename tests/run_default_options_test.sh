@@ -410,7 +410,7 @@ TESTSRUN=$((TESTSRUN + 1))
 
 ###############################################################################
 # clean up
-rm -rf ./current ./output*
+rm -rf ./current output/
 rm -f FLEXPART FLEXPART_ETA pathnames_tmp
 # TODO: Add more tests for other options as needed
 # Test particle output (ipout=1)

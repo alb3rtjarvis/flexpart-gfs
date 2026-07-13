@@ -44,10 +44,6 @@ ln -s ../src/FLEXPART_ETA .
 test -d ./default_options
 report "[$MM] default options: ./default_options" || exit 1
 cp -rf ./default_options ./current
-if [ -d ./output ]; then
-    rm -rf ./output/*
-fi
-mkdir -p ./output/
 # Test counters
 STATUS=0
 TESTSRUN=0

@@ -66,9 +66,9 @@ TESTSRUN=$((TESTSRUN + 1))
 summary "[$MM] TEST ETA $TESTSRUN (ETA NESTS)"
 STATUS=$((STATUS + $?))
 TESTSRUN=$((TESTSRUN + 1))
-#
+# Clean up
+rm -rf FLEXPART FLEXPART_ETA output*
 # FINAL
-#
 echo -e "\n[$MM] SUMMARY:\n$SUMMARY"
 echo "[$MM] Tests failed: $STATUS / $TESTSRUN"
 #
