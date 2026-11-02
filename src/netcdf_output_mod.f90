@@ -1808,6 +1808,8 @@ subroutine writeheader_partoutput(itime,idate,itime_start,idate_start)!,irelease
   !                                                                            *
   !*****************************************************************************
 
+  use particle_mod, only: count
+
   implicit none
 
   integer, intent(in) :: itime,idate,itime_start,idate_start
