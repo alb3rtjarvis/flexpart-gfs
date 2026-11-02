@@ -1844,7 +1844,7 @@ subroutine writeheader_partoutput(itime,idate,itime_start,idate_start)!,irelease
 
   totpart=0
   if (ipin.gt.1) then ! Not reading from a release has no npart
-    totpart=numpart
+    totpart=count%allocated
   else
     do j=1,numpoint
       totpart = totpart+npart(j)
