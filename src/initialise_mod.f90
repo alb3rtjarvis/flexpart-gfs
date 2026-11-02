@@ -55,6 +55,8 @@ subroutine alloc_domainfill
   allocate(numcolumn_we(2,0:nymax-1),numcolumn_sn(2,0:nxmax-1))
   allocate(zcolumn_we(2,0:nymax-1,maxcolumn),zcolumn_sn(2,0:nxmax-1,maxcolumn), &
     acc_mass_we(2,0:nymax-1,maxcolumn),acc_mass_sn(2,0:nxmax-1,maxcolumn))              
+  numcolumn_we = 0
+  numcolumn_sn = 0
 end subroutine alloc_domainfill
 
 subroutine dealloc_domainfill
