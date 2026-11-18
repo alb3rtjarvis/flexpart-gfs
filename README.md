@@ -1,7 +1,6 @@
-![](https://www.flexpart.eu/chrome/site/flexpart_banner.png)
 # Welcome to Flexpart - The Lagrangian particle dispersion model
 
-This is the main development site @ University of Vienna.
+This is a branch of FLEXPART v11 that focuses on usage with GFS. I have preserved the README from the originial repo below.
 
 Other references:
 
