@@ -44,7 +44,7 @@ program flexpart
   real :: s_timemanager
   character(len=256) ::   &
     inline_options          ! pathfile, flexversion, arg2
-  character(len=256) :: gitversion_tmp="undefined"
+  character(len=256) :: gitversion_tmp="6257f9c Fri Nov 13 12:41:07 2026 -0500"
 
   ! Keeping track of the total running time of FLEXPART, printed out at the end.
   !*****************************************************************************

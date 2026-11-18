@@ -121,7 +121,9 @@ subroutine cbl(wp,zp,wst,h,rhoa,rhograd,sigmaw,dsigmawdz,tlw,ptot,Q,phi,ath,bth,
     fluarw=costluar4*(cuberoot(skew))   !skew**(1./3.)
     fluarw2=fluarw*fluarw
     
-    if (skew.ne.0) then
+    ! if (skew.ne.0) then
+    ! replace to protect against precision overflow
+    if (abs(skew) .gt. 1.e3 * sqrt(tiny(skew))) then
       
         dfluarw=costluar4*(1./3.)*cuberoot(skew**(-2.))*dskew
     
@@ -142,6 +144,8 @@ subroutine cbl(wp,zp,wst,h,rhoa,rhograd,sigmaw,dsigmawdz,tlw,ptot,Q,phi,ath,bth,
             (((3.+fluarw2)*fluarw)**2)
     
     else        
+        fluarw = 0.
+        fluarw2 = 0.
         dfluarw=0.
         rluarw=0.
         drluarw=0.
@@ -292,10 +296,23 @@ subroutine reinit_particle(zp,wst,h,sigmaw,wp,nrand,ol)
   skew2=skew*skew
   radw2=sqrt(w2) !sigmaw
 
-  fluarw=costluar4*skew**0.333333333333333
-  fluarw2=fluarw*fluarw
-  rluarw=(1.+fluarw2)**3.*skew2/((3.+fluarw2)**2.*fluarw2)  !-> r
-  xluarw=rluarw**0.5 !(1.+fluarw2)**1.5*skew/((3.+fluarw2)*fluarw)    !----> r^1/2
+  ! fluarw=costluar4*skew**0.333333333333333
+  ! fluarw2=fluarw*fluarw
+  ! rluarw=(1.+fluarw2)**3.*skew2/((3.+fluarw2)**2.*fluarw2)  !-> r
+  ! xluarw=rluarw**0.5 !(1.+fluarw2)**1.5*skew/((3.+fluarw2)*fluarw)    !----> r^1/2
+  
+  ! Replace with this to prevent nan errors
+  if (abs(skew) .gt. 1.e3 * sqrt(tiny(skew))) then
+    fluarw = costluar4 * cuberoot(skew)
+    fluarw2 = fluarw * fluarw
+    rluarw = (1. + fluarw2)**3. * skew2 / ((3. + fluarw2)**2. * fluarw2)
+    xluarw = rluarw**0.5
+  else
+    fluarw = 0.
+    fluarw2 = 0.
+    rluarw = 0.
+    xluarw = 0.
+  end if
 
   aluarw=0.5*(1.-xluarw/(4.+rluarw)**0.5)
   bluarw=1.-aluarw
@@ -384,10 +401,23 @@ subroutine init_cbl_vel(idum,zp,wst,h,sigmaw,wp,ol,ithread)
 
   radw2=sqrt(w2) !sigmaw
 
-  fluarw=costluar4*skew**0.333333333333333
-  fluarw2=fluarw*fluarw
-  rluarw=(1.+fluarw2)**3.*skew2/((3.+fluarw2)**2.*fluarw2)  !-> r
-  xluarw=rluarw**0.5 !----> r^1/2
+  ! fluarw=costluar4*skew**0.333333333333333
+  ! fluarw2=fluarw*fluarw
+  ! rluarw=(1.+fluarw2)**3.*skew2/((3.+fluarw2)**2.*fluarw2)  !-> r
+  ! xluarw=rluarw**0.5 !----> r^1/2
+
+  ! Replace with this to prevent nan errors
+  if (abs(skew) .gt. 1.e3 * sqrt(tiny(skew))) then
+    fluarw = costluar4 * cuberoot(skew)
+    fluarw2 = fluarw * fluarw
+    rluarw = (1. + fluarw2)**3. * skew2 / ((3. + fluarw2)**2. * fluarw2)
+    xluarw = rluarw**0.5
+  else
+    fluarw = 0.
+    fluarw2 = 0.
+    rluarw = 0.
+    xluarw = 0.
+  end if
 
   aluarw=0.5*(1.-xluarw/(4.+rluarw)**0.5)
   bluarw=1.-aluarw
