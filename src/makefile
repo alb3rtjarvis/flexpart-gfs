@@ -159,7 +159,7 @@ FFLAGS = -O$(O_LEV) -m64 -cpp -mcmodel=large -fconvert=little-endian -frecord-ma
 # -fbacktrace -fcheck=all -fbounds-check -fdefault-real-8 -freal-8-real-4 -pg
 # -O0 no optimization
 # -g3 maximum debug information
-DBGFLAGS = -O0 -g3 -ggdb3 -m64 -cpp -mcmodel=large -fcheck=all -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto -fbacktrace -Wall -fdump-core $(NCOPT) $(ETAOPT) $(FUSER) $(omp)
+DBGFLAGS = -O0 -g3 -ggdb3 -m64 -cpp -mcmodel=large -fcheck=all -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto -fbacktrace -Wall -fdump-core -ffpe-trap=invalid,overflow $(NCOPT) $(ETAOPT) $(FUSER) $(omp)
 else ifneq ($(filter %ifort %ifx, $(FC)),)
 $(info Using Intel Fortran compiler: $(FC))
 # -m64 is needed for large memory models (64 bit addressing)
