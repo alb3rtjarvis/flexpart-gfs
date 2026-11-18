@@ -10,4 +10,5 @@ FLEXPART_ETA_BIN
 FLEXPART_BIN
 FLEXPART_MPI
 *.sif
+projects
 gitversion.txt
